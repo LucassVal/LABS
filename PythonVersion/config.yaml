@@ -61,3 +61,22 @@ auto_low_priority_apps:
   
 # NOTA: Você NÃO precisa mais configurar process_rules!
 # O sistema inteligente cuida de tudo automaticamente!
+
+# === V3.0: Network QoS (Ping Booster) ===
+network_qos:
+  enabled: true
+
+# === V3.0: Game Mode Detector ===
+game_detector:
+  enabled: true
+  # Adicione jogos extras que não estão na lista padrão:
+  extra_game_exes: []
+    # - "myjogo.exe"
+    # - "outrogame.exe"
+
+# === V3.0: Profiles ===
+# Profile padrão: balanced (outros: gaming, productivity, battery_saver)
+# Pode trocar via System Tray ou editando aqui
+profile:
+  default: balanced
+
