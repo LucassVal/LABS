@@ -177,4 +177,12 @@ def main():
         print(f"{Fore.GREEN}✓ Finalizado{Style.RESET_ALL}\n")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print(f"\n{Fore.RED}═══ FATAL ERROR ═══{Style.RESET_ALL}")
+        print(f"{Fore.RED}An unhandled exception occurred:{Style.RESET_ALL}")
+        traceback.print_exc()
+        print(f"\n{Fore.YELLOW}Please report this error.{Style.RESET_ALL}")
+        input(f"\n{Fore.WHITE}Press ENTER to exit...{Style.RESET_ALL}")

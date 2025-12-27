@@ -37,34 +37,35 @@ This optimizer **solves all of these** automatically!
 
 ## ✨ Key Features
 
+### 🚀 V2.0 ENGINE UPDATES (New!)
+
+### ⚡ Smart I/O Priority Control (Kernel-Level)
+- Uses **undocumented Windows Kernel APIs** (`NtSetInformationProcess`)
+- **Active Apps (Games)**: Forces **High I/O Priority**. Your game skips the SSD queue!
+- **Background Apps**: Forces **Very Low I/O Priority**. Chrome/Steam updates won't stutter your game.
+- **Result**: Eliminates micro-stuttering caused by background disk usage.
+
+### 🔥 Adaptive CPU Thermal Governor
+- Replaces static limits with a dynamic algorithm monitoring temperature in real-time.
+- **< 70°C**: Unlocks **100% CPU** (Turbo Boost) for max responsiveness.
+- **70°C - 80°C**: Adjusts to **90%** to maintain performance.
+- **> 90°C**: Throttles to **85%** to prevent overheating.
+- **Benefit**: "Snappy" system for short bursts, safe for long gaming sessions.
+
+### 🧹 Surgical RAM Cleaning (V2)
+- New logic: **Only cleans when necessary.**
+- Checks if **Standby Cache > 1GB**. If cache is empty, it does NOTHING.
+- **Prevention**: Prevents "over-cleaning" which could cause stuttering by forcing useful data out of RAM.
+- **Zero-Stutter**: Removed aggressive `EmptyWorkingSets` call.
+
+### 📊 Enhanced Dashboard
+- **Live Stats**: Tracks total RAM liberated and system uptime.
+- **Smart Status**: Shows active "High Priority" and "Low Priority" process counts.
+- **English**: Fully translated interface.
+
+---
+
 ### 🧹 Automatic RAM Cleaning
-- Monitors RAM usage every 5 seconds
-- Cleans Windows Standby Cache when free RAM < 4GB
-- Liberates 2-6GB instantly
-- Similar to ISLC but automated
-
-### 🔥 CPU Thermal Control
-- Limits CPU to 85% frequency (configurable)
-- **Result**: Sustained 85% performance vs 100% that throttles to 50%
-- Equivalent to -60mV to -75mV undervolt
-- Temperature reduction: **-20°C**
-
-### 🎯 Intelligent Process Priority
-- Automatically detects user-initiated apps (games, work tools)
-- Assigns HIGH priority to your important processes
-- Assigns LOW priority to browsers and background tasks
-- **Zero manual configuration**
-
-### 📊 Real-Time Dashboard
-- Beautiful console dashboard with live stats
-- Alternative: Floating widget (always-on-top window)
-- Monitors: CPU, GPU, RAM, Temperatures
-- Update interval: 5 seconds (no flickering!)
-
-### 🎮 Dual GPU Support
-- NVIDIA GPU: Full stats (usage, temp, VRAM)
-- Intel iGPU: Detection and status
-- Automatic temperature monitoring
 
 > **Note**: Fan control via software is limited on Windows. NBFC project was discontinued.  
 > **Alternatives**: Use manufacturer software (ASUS Armoury Crate, MSI Dragon Center) or BIOS settings.
