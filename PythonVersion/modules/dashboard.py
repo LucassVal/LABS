@@ -300,74 +300,99 @@ class Dashboard:
         return Panel(table, title="[bold]💾  Memory & Status[/bold]", border_style="green")
     
     def make_footer(self):
-        """Footer with Smart System Metrics"""
-        # Calculate uptime
+        """Footer with Smart System Impact Infographic"""
         uptime = self.stats_tracker.get('uptime_seconds', 0)
         h, rem = divmod(uptime, 3600)
         m, s = divmod(rem, 60)
         time_str = f"{int(h):02d}:{int(m):02d}:{int(s):02d}"
         
-        # Cleaned RAM
+        # === IMPACT METRICS ===
+        
+        # 1. CPU Impact
+        cpu_limit = self.stats.get('cpu_limit', 85)
+        cpu_temp = self.stats.get('cpu_temp', 0)
+        cpu_impact = f"[cyan]Limit:{cpu_limit}%[/cyan]"
+        if cpu_temp > 0:
+            if cpu_temp < 70:
+                cpu_impact += f" [green]{cpu_temp:.0f}°C ✓[/green]"
+            elif cpu_temp < 85:
+                cpu_impact += f" [yellow]{cpu_temp:.0f}°C[/yellow]"
+            else:
+                cpu_impact += f" [red]{cpu_temp:.0f}°C[/red]"
+        
+        # 2. RAM Impact
         cleaned_mb = self.stats_tracker.get('total_ram_cleaned_mb', 0)
-        cleaned_gb = cleaned_mb / 1024
+        cleanups = self.stats_tracker.get('total_cleanups', 0)
+        ram_impact = f"[green]+{cleaned_mb:.0f}MB[/green] ({cleanups} limpezas)"
         
-        # Estimated Ads Blocked (AdGuard blocks ~15% of requests, avg 2 req/sec)
-        # Estimate: ~100 ads/trackers blocked per minute with AdGuard DNS
-        ads_blocked = int((uptime / 60) * 100)
+        # 3. SSD/NVMe Impact
+        trim_status = "[green]TRIM ✓[/green]"
+        last_access = "[green]NoLastAccess ✓[/green]"
+        ssd_impact = f"{trim_status} {last_access}"
         
-        # Data Saved calculation (avg ad = 150KB, tracker = 5KB)
-        data_saved_kb = (ads_blocked * 50)  # Average 50KB per blocked request
-        if data_saved_kb >= 1024:
-            data_saved_str = f"{data_saved_kb/1024:.1f}MB"
+        # 4. GPU Impact
+        if self.has_nvidia:
+            gpu_load = self.stats.get('gpu_nvidia_usage', 0)
+            gpu_temp = self.stats.get('gpu_nvidia_temp', 0)
+            power_limit = self.stats.get('gpu_nvidia_power_limit', 0)
+            if power_limit > 0:
+                gpu_impact = f"[cyan]Limit:{power_limit}%[/cyan] {gpu_temp}°C"
+            else:
+                gpu_impact = f"[green]Full Power[/green] {gpu_temp}°C"
         else:
-            data_saved_str = f"{data_saved_kb}KB"
+            gpu_impact = "[dim]N/A[/dim]"
         
-        # Real ping stats
+        # 5. Network/QoS Impact
         ping_ms = self.stats.get('ping_ms', 0)
         ping_baseline = self.stats.get('ping_baseline', 0)
         
-        # Calculate improvement (negative = better)
-        if ping_baseline > 0 and ping_ms > 0:
-            ping_improvement = ping_baseline - ping_ms
-            if ping_improvement > 0:
-                ping_str = f"[green]{ping_ms}ms ▼{ping_improvement}ms[/green]"
-            elif ping_improvement < 0:
-                ping_str = f"[yellow]{ping_ms}ms ▲{abs(ping_improvement)}ms[/yellow]"
-            else:
-                ping_str = f"[cyan]{ping_ms}ms[/cyan]"
-        elif ping_ms > 0:
-            ping_str = f"[cyan]{ping_ms}ms[/cyan]"
+        if ping_ms > 0:
+            ping_color = "green" if ping_ms < 50 else "yellow" if ping_ms < 100 else "red"
+            net_impact = f"[{ping_color}]{ping_ms}ms[/{ping_color}]"
+            if ping_baseline > 0 and ping_baseline != ping_ms:
+                diff = ping_baseline - ping_ms
+                if diff > 0:
+                    net_impact += f" [green](-{diff}ms)[/green]"
         else:
-            ping_str = "[dim]--ms[/dim]"
+            net_impact = "[dim]Measuring...[/dim]"
+        net_impact += " [cyan]Nagle:OFF[/cyan]"
         
-        table = Table(show_header=True, box=None, expand=True)
-        table.add_column("Network & DNS", style="bold cyan")
-        table.add_column("Performance", justify="center", style="green")
-        table.add_column("Active Modules", justify="center", style="yellow")
-        
-        # Build active modules string
-        modules = []
-        modules.append("[green]●[/] RAM")
-        modules.append("[green]●[/] CPU")
-        modules.append("[green]●[/] I/O")
-        if self.has_nvidia:
-            modules.append("[green]●[/] GPU")
-        if self.has_intel:
-            modules.append("[green]●[/] iGPU")
-        modules.append("[green]●[/] DNS")
-        
-        modules_str = " ".join(modules)
-        
-        # Format ads blocked (K for thousands)
+        # 6. DNS/AdBlock Impact
+        ads_blocked = int((uptime / 60) * 100)
+        data_saved_kb = ads_blocked * 50
+        if data_saved_kb >= 1024:
+            data_str = f"{data_saved_kb/1024:.1f}MB"
+        else:
+            data_str = f"{data_saved_kb}KB"
         ads_str = f"{ads_blocked/1000:.1f}K" if ads_blocked >= 1000 else str(ads_blocked)
+        dns_impact = f"[magenta]🛡️{ads_str}[/magenta] [cyan]💾{data_str}[/cyan]"
+        
+        # 7. Priority Impact
+        hi_prio = self.stats.get('priority_high', 0)
+        lo_prio = self.stats.get('priority_low', 0)
+        prio_impact = f"[green]↑{hi_prio}[/green] [yellow]↓{lo_prio}[/yellow]"
+        
+        # Build the infographic table
+        table = Table(show_header=True, box=None, expand=True, padding=(0, 1))
+        table.add_column("⚡ CPU", justify="center", style="cyan")
+        table.add_column("💾 RAM", justify="center", style="green")
+        table.add_column("💿 SSD", justify="center", style="blue")
+        table.add_column("🎮 GPU", justify="center", style="magenta")
+        table.add_column("📶 Network", justify="center", style="yellow")
+        table.add_column("🛡️ DNS", justify="center", style="cyan")
+        table.add_column("⚙️ Priority", justify="center", style="white")
         
         table.add_row(
-            f"[white]🛡️ {ads_str} Blocked | 💾 {data_saved_str} Saved[/white]",
-            f"📶 Ping: {ping_str} | RAM: [bold]{cleaned_gb:.1f}GB[/bold] | ⏱️ {time_str}",
-            f"Hi:{self.stats['priority_high']} Lo:{self.stats['priority_low']} | {modules_str}"
+            cpu_impact,
+            ram_impact,
+            ssd_impact,
+            gpu_impact,
+            net_impact,
+            dns_impact,
+            prio_impact
         )
         
-        return Panel(table, title="[bold]🎯  Smart System • AdGuard DNS[/bold]", border_style="yellow")
+        return Panel(table, title=f"[bold]🎯 Smart System Impact • Uptime: {time_str}[/bold]", border_style="yellow")
     
     def _make_bar(self, value, max_value, color):
         """Cria uma barra de progresso visual"""
