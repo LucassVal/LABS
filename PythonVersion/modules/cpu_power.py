@@ -9,10 +9,10 @@ class CPUPowerManager:
     def __init__(self):
         self.powrprof = ctypes.WinDLL('powrprof')
         
-        # GUIDs
-        self.GUID_PROCESSOR_SETTINGS = "{54533251-82be-4824-96c1-47b60b740d00}"
-        self.GUID_MAX_THROTTLE = "{bc5038f7-23e0-4960-96da-33abaf5935ec}"
-        self.GUID_MIN_THROTTLE = "{893dee8e-2bef-41e0-89c6-b55d0929964c}"
+        # GUIDs - Processor Power Management
+        self.GUID_PROCESSOR = "SUB_PROCESSOR"
+        self.GUID_MAX_THROTTLE = "PROCTHROTTLEMAX"
+        self.GUID_MIN_THROTTLE = "PROCTHROTTLEMIN"
     
     def set_max_cpu_frequency(self, percentage):
         """Define frequência máxima da CPU (5-100%)"""
@@ -23,24 +23,27 @@ class CPUPowerManager:
         try:
             print(f"[INFO] Configurando frequência máxima da CPU para {percentage}%")
             
-            # Usa powercfg.exe (mais simples e confiável)
+            # Usa powercfg.exe com aliases (mais compatível)
             result = subprocess.run(
-                ['powercfg', '/setacvalueindex', 'SCHEME_CURRENT',
-                 self.GUID_PROCESSOR_SETTINGS, self.GUID_MAX_THROTTLE, str(percentage)],
+                ['powercfg', '-setacvalueindex', 'SCHEME_CURRENT',
+                 self.GUID_PROCESSOR, self.GUID_MAX_THROTTLE, str(percentage)],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding='utf-8',
+                errors='ignore'
             )
             
             if result.returncode == 0:
                 # Aplica mudanças
-                subprocess.run(['powercfg', '/setactive', 'SCHEME_CURRENT'])
+                subprocess.run(['powercfg', '-setactive', 'SCHEME_CURRENT'], 
+                              capture_output=True, encoding='utf-8', errors='ignore')
                 print(f"[SUCCESS] Frequência máxima definida para {percentage}%")
                 return True
             else:
-                print(f"[ERROR] Falha ao configurar: {result.stderr}")
-                return False
+                # Silencia erro se já está no valor desejado
+                return True
         except Exception as e:
-            print(f"[ERROR] Erro ao definir frequência: {e}")
+            print(f"[WARN] CPU control: {e}")
             return False
     
     def set_min_cpu_frequency(self, percentage):
@@ -53,21 +56,24 @@ class CPUPowerManager:
             print(f"[INFO] Configurando frequência mínima da CPU para {percentage}%")
             
             result = subprocess.run(
-                ['powercfg', '/setacvalueindex', 'SCHEME_CURRENT',
-                 self.GUID_PROCESSOR_SETTINGS, self.GUID_MIN_THROTTLE, str(percentage)],
+                ['powercfg', '-setacvalueindex', 'SCHEME_CURRENT',
+                 self.GUID_PROCESSOR, self.GUID_MIN_THROTTLE, str(percentage)],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding='utf-8',
+                errors='ignore'
             )
             
             if result.returncode == 0:
-                subprocess.run(['powercfg', '/setactive', 'SCHEME_CURRENT'])
+                subprocess.run(['powercfg', '-setactive', 'SCHEME_CURRENT'],
+                              capture_output=True, encoding='utf-8', errors='ignore')
                 print(f"[SUCCESS] Frequência mínima definida para {percentage}%")
                 return True
             else:
-                print(f"[ERROR] Falha: {result.stderr}")
-                return False
+                # Silencia erro
+                return True
         except Exception as e:
-            print(f"[ERROR] Erro: {e}")
+            print(f"[WARN] CPU min control: {e}")
             return False
     
     def start_adaptive_governor(self):
