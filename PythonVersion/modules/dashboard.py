@@ -403,17 +403,33 @@ class Dashboard:
         return self.layout
     
     def run(self, services):
-        """Executa o dashboard em loop"""
+        """Executa o dashboard em loop (Stable Mode)"""
         self.running = True
         
-        # refresh_per_second=1 = atualiza a cada 1 segundo (REAL TIME)
-        with Live(self.render(services), refresh_per_second=1, console=self.console, screen=True) as live:
+        # Simple, stable configuration:
+        # - refresh_per_second=0.5 (update every 2 seconds - very stable)
+        # - screen=False (no full screen takeover - prevents jumping)
+        # - Uses auto_refresh=True (Rich handles timing)
+        
+        # Initial render
+        self.update_stats(services)
+        
+        with Live(
+            self.layout,
+            refresh_per_second=0.5,
+            console=self.console,
+            screen=False,
+            auto_refresh=True
+        ) as live:
             while self.running:
-                time.sleep(1)  # Aguarda 1 segundo entre atualizações
-                live.update(self.render(services))
+                time.sleep(2)  # Update every 2 seconds
+                self.update_stats(services)
+                self.render(services)
 
 
 if __name__ == "__main__":
     # Teste
     dash = Dashboard()
     dash.run({})
+
+
