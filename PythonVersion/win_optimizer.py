@@ -111,6 +111,12 @@ def main():
     
     if max_freq != 100:
         services['cpu_power'].set_max_cpu_frequency(max_freq)
+    
+    # [V2.0] Adaptive Thermal Governor
+    # Auto-enabled unless user specifically forced a low fixed manual limit (< 80)
+    if max_freq >= 80:
+        services['cpu_power'].start_adaptive_governor()
+    
     if min_freq != 5:
         services['cpu_power'].set_min_cpu_frequency(min_freq)
     

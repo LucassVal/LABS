@@ -53,12 +53,30 @@ class StandbyMemoryCleaner:
                 available_mb = mem.available // (1024 * 1024)
                 
                 if available_mb < self.threshold_mb:
-                    freed_mb = self.clean_standby_memory()
-                    self.last_cleaned_mb = freed_mb
-                    self.clean_count += 1
-                    self.total_cleaned_mb += freed_mb
-                    print(f"[CLEAN] Memória limpa: {freed_mb}MB liberados | "
-                          f"Disponível: {available_mb}MB → {(mem.available + freed_mb * 1024 * 1024) // (1024 * 1024)}MB")
+                    # [V2.0] Surgical Check: Just checking free RAM is not enough.
+                    # We must check if there is actually Cached/Standby memory to clean.
+                    # IF (Free < Limit) AND (Standby > 1GB) -> CLEAN
+                    # IF (Free < Limit) AND (Standby < 1GB) -> DO NOTHING (Cleaning empty cache = Stutter)
+                    
+                    # Estimate Standby (Available - Free)
+                    # Note: psutil 'available' includes standby. 'free' is zero-filled pages.
+                    # This is rough estimation but efficient.
+                    standby_estimated = mem.available - mem.free
+                    standby_mb = standby_estimated // (1024 * 1024)
+                    
+                    if standby_mb > 1024:
+                        print(f"[CLEANER] Low Memory ({available_mb}MB) & High Cache ({standby_mb}MB) -> PURGING...")
+                        freed_mb = self.clean_standby_memory()
+                        
+                        if freed_mb > 100:
+                            self.last_cleaned_mb = freed_mb
+                            self.clean_count += 1
+                            self.total_cleaned_mb += freed_mb
+                            print(f"[CLEAN] Released: {freed_mb}MB | New Available: {available_mb + freed_mb}MB")
+                    else:
+                        # Low memory but also low cache -> System is genuinely full. Cleaning won't help.
+                        # Do nothing to avoid I/O thrashing.
+                        pass
                 
                 time.sleep(self.check_interval)
             except Exception as e:
@@ -74,7 +92,8 @@ class StandbyMemoryCleaner:
             # Obtém memória antes
             mem_before = psutil.virtual_memory().available // (1024 * 1024)
             
-            # Purge Standby List
+            # [V2.0] Purge Standby List ONLY.
+            # Avoid 'EmptyWorkingSets' as it forces active apps to swap to disk (Causes Stutter!)
             command = ctypes.c_int(MemoryPurgeStandbyList)
             ntdll.NtSetSystemInformation(
                 SystemMemoryListInformation,
@@ -82,13 +101,8 @@ class StandbyMemoryCleaner:
                 ctypes.sizeof(command)
             )
             
-            # Empty Working Sets (fallback)
-            command = ctypes.c_int(MemoryEmptyWorkingSets)
-            ntdll.NtSetSystemInformation(
-                SystemMemoryListInformation,
-                ctypes.byref(command),
-                ctypes.sizeof(command)
-            )
+            # Note: We DISABLED MemoryEmptyWorkingSets consciously.
+            # While it frees more "Ram", it degrades performance heavily for 1-2 seconds.
             
             time.sleep(0.1)  # Aguarda processamento
             
