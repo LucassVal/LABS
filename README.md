@@ -104,11 +104,7 @@ pip install -r requirements.txt
 RUN_OPTIMIZER.bat
 ```
 
-### 4. Choose Dashboard Mode
-```
-[1] Console Dashboard (full-featured, recommended)
-[2] Floating Widget (compact, always-on-top)
-```
+The Console Dashboard will start automatically.
 
 ---
 
