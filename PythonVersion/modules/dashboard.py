@@ -312,12 +312,25 @@ class Dashboard:
         table = Table(show_header=True, box=None, expand=True)
         table.add_column("System Intelligence", style="bold cyan")
         table.add_column("Live Statistics", justify="center", style="green")
-        table.add_column("Process Management", justify="center", style="yellow")
+        table.add_column("Active Modules", justify="center", style="yellow")
+        
+        # Build active modules string
+        modules = []
+        modules.append("[green]●[/] RAM")
+        modules.append("[green]●[/] CPU")
+        modules.append("[green]●[/] I/O")
+        if self.has_nvidia:
+            modules.append("[green]●[/] GPU")
+        if self.has_intel:
+            modules.append("[green]●[/] iGPU")
+        modules.append("[green]●[/] QoS")  # Network QoS (Nagle Off, TCP Opt)
+        
+        modules_str = " ".join(modules)
         
         table.add_row(
-            "[white]AI-based optimization running in background[/white]",
-            f"RAM Liberated: [bold]{cleaned_gb:.1f} GB[/bold] | Uptime: {time_str}",
-            f"High Priority: {self.stats['priority_high']} | Low Priority: {self.stats['priority_low']}"
+            "[white]V3.0 Engine • QoS: Nagle Off + TCP Optimized[/white]",
+            f"RAM: [bold]{cleaned_gb:.1f}GB[/bold] | Uptime: {time_str}",
+            f"Hi:{self.stats['priority_high']} Lo:{self.stats['priority_low']} | {modules_str}"
         )
         
         return Panel(table, title="[bold]🎯  Smart System[/bold]", border_style="yellow")
