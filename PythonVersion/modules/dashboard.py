@@ -369,18 +369,28 @@ class Dashboard:
         # Uptime
         self.stats_tracker['uptime_seconds'] = int(time.time() - self.stats_tracker['start_time'])
 
-        # Prioridades
+        # Prioridades (Fix for Windows Constants)
         try:
-            procs = list(psutil.process_iter(['name', 'nice']))
+            procs = list(psutil.process_iter(['nice']))
             high_count = 0
             low_count = 0
+            
+            # Windows Priority Constants
+            # High=128, AboveNormal=32768, Realtime=256
+            # Normal=32
+            # BelowNormal=16384, Idle=64
+            
+            # psutil mapping might vary slightly by version, checking against sets is safer
+            HIGH_PRIOS = {psutil.HIGH_PRIORITY_CLASS, psutil.REALTIME_PRIORITY_CLASS, psutil.ABOVE_NORMAL_PRIORITY_CLASS}
+            LOW_PRIOS = {psutil.IDLE_PRIORITY_CLASS, psutil.BELOW_NORMAL_PRIORITY_CLASS}
+            
             for p in procs:
                 try:
-                    if p.info['nice']:
-                        if p.info['nice'] < psutil.NORMAL_PRIORITY_CLASS:
-                            high_count += 1
-                        elif p.info['nice'] > psutil.NORMAL_PRIORITY_CLASS:
-                            low_count += 1
+                    p_nice = p.info['nice']
+                    if p_nice in HIGH_PRIOS:
+                        high_count += 1
+                    elif p_nice in LOW_PRIOS:
+                        low_count += 1
                 except:
                     pass
             self.stats['priority_high'] = high_count
