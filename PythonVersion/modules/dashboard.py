@@ -11,6 +11,7 @@ from rich.table import Table
 from rich.live import Live
 from rich.align import Align
 from datetime import datetime
+from modules import temperature_service
 
 class Dashboard:
     def __init__(self):
@@ -86,7 +87,8 @@ class Dashboard:
         except Exception as e:
             print(f"[GPU] NVIDIA não detectada: {e}")
         
-        # Detecta Intel integrada via WMI
+        # Detecta Intel integrada via WMI (CACHED at init - no per-frame calls)
+        self._cached_intel_name = "Intel Integrated Graphics"
         try:
             import wmi
             c = wmi.WMI()
@@ -94,10 +96,14 @@ class Dashboard:
                 if 'intel' in gpu.Name.lower():
                     self.has_intel = True
                     self.stats['gpu_intel_name'] = gpu.Name
+                    self._cached_intel_name = gpu.Name
                     print(f"[GPU] Intel detectada: {gpu.Name}")
                     break
         except Exception as e:
             print(f"[GPU] Intel não detectada: {e}")
+        
+        # Get temperature service singleton
+        self._temp_service = temperature_service.get_service()
     
     def make_header(self):
         """Creates header with title and status"""
@@ -191,20 +197,9 @@ class Dashboard:
         table.add_row("", "")
         
         # === GPU SECTION (MULTI-GPU SUPPORT) ===
-        # Getting Intel GPU info via WMI for basic display
-        intel_name = "Intel Integrated Graphics"
-        intel_active = False
-        if self.has_intel:
-            try:
-                import wmi
-                w = wmi.WMI(namespace="root\\cimv2")
-                for gpu in w.Win32_VideoController():
-                    if "Intel" in gpu.Name:
-                        intel_name = gpu.Name
-                        intel_active = True
-                        break
-            except:
-                pass
+        # Using CACHED Intel GPU name (no WMI calls per-frame)
+        intel_name = self._cached_intel_name
+        intel_active = self.has_intel
 
         table.add_row("", "")
         table.add_row("[bold white]GPU ADAPTERS[/bold white]", "")
@@ -320,53 +315,8 @@ class Dashboard:
         # CPU
         self.stats['cpu_percent'] = psutil.cpu_percent(interval=0.1)
         
-        # Temperatura da CPU (tentar vários métodos)
-        temp_found = False
-        
-        # Método 1: psutil sensors (Linux-like, raramente funciona no Windows)
-        try:
-            temps = psutil.sensors_temperatures()
-            if temps and 'coretemp' in temps:
-                self.stats['cpu_temp'] = temps['coretemp'][0].current
-                temp_found = True
-        except:
-            pass
-        
-        # Método 2: WMI MSAcpi_ThermalZoneTemperature
-        if not temp_found:
-            try:
-                import wmi
-                w = wmi.WMI(namespace="root\\wmi")
-                temperature_info = w.MSAcpi_ThermalZoneTemperature()[0]
-                # Kelvin para Celsius
-                self.stats['cpu_temp'] = (temperature_info.CurrentTemperature / 10.0) - 273.15
-                temp_found = True
-            except:
-                pass
-        
-        # Método 3: WMI OpenHardwareMonitor / LibreHardwareMonitor
-        if not temp_found:
-            try:
-                import wmi
-                w = wmi.WMI(namespace="root\\OpenHardwareMonitor")
-                sensors = w.Sensor()
-                for sensor in sensors:
-                    if sensor.SensorType == 'Temperature' and 'CPU' in sensor.Name:
-                        self.stats['cpu_temp'] = float(sensor.Value)
-                        temp_found = True
-                        break
-            except:
-                pass
-        
-        # Método 4: Se nada funcionar, usar temperatura da GPU NVIDIA como referência
-        if not temp_found and self.has_nvidia and self.stats['gpu_nvidia_temp'] > 0:
-            # CPU geralmente é 5-10°C mais quente que GPU
-            self.stats['cpu_temp'] = self.stats['gpu_nvidia_temp'] + 7
-            temp_found = True
-        
-        # Se ainda não encontrou, deixa 0 (será mostrado como "N/A")
-        if not temp_found:
-            self.stats['cpu_temp'] = 0
+        # Temperatura da CPU (usando serviço centralizado com cache)
+        self.stats['cpu_temp'] = self._temp_service.get_cpu_temp()
         
         # Frequência da CPU
         freq = psutil.cpu_freq()

@@ -74,7 +74,10 @@ class CPUPowerManager:
         """[V2.0] Starts Adaptive Thermal Throttling"""
         import threading
         import time
-        import psutil
+        from modules import temperature_service
+        
+        # Get singleton instance (reuses WMI connection)
+        temp_svc = temperature_service.get_service()
         
         def thermal_loop():
             print("[CPU] Adaptive Thermal Governor STARTED 🚀")
@@ -82,15 +85,8 @@ class CPUPowerManager:
             
             while True:
                 try:
-                    temp = 0
-                    # Quick temp check (reusing logic from dashboard would be better, but keeping simple here to avoid dep loops)
-                    try:
-                        import wmi
-                        w = wmi.WMI(namespace="root\\wmi")
-                        t = w.MSAcpi_ThermalZoneTemperature()[0].CurrentTemperature
-                        temp = (t / 10.0) - 273.15
-                    except:
-                        pass # Fail silently if no sensor
+                    # Use centralized cached temperature service
+                    temp = temp_svc.get_cpu_temp()
                         
                     if temp > 0:
                         new_limit = current_limit
@@ -118,6 +114,18 @@ class CPUPowerManager:
 
         t = threading.Thread(target=thermal_loop, daemon=True)
         t.start()
+
+    def restore_defaults(self):
+        """Restaura configurações padrão de CPU (100%)"""
+        try:
+            print("[INFO] Restaurando configurações padrão de CPU...")
+            self.set_max_cpu_frequency(100)
+            self.set_min_cpu_frequency(5)
+            print("[SUCCESS] Configurações de CPU restauradas para padrão")
+            return True
+        except Exception as e:
+            print(f"[ERROR] Erro ao restaurar padrões: {e}")
+            return False
 
 
 if __name__ == "__main__":

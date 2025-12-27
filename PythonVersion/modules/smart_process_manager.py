@@ -11,8 +11,6 @@ class IO_PRIORITY:
     Normal = 2
     High = 3       # Games, Active Apps
     Critical = 4
-    High = 3       # Games, Active Apps
-    Critical = 4
 
 class SmartProcessManager:
     def __init__(self):

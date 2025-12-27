@@ -172,7 +172,6 @@ def main():
             services['nvme'] = nvme_mgr
 
     print(f"\n{Fore.GREEN}✓ Todos os serviços iniciados{Style.RESET_ALL}")
-    print(f"\n{Fore.GREEN}✓ Todos os serviços iniciados{Style.RESET_ALL}")
     
     time.sleep(1)
     
