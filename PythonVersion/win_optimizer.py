@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Windows NVMe RAM Optimizer - V3.0
-Sistema automatizado de otimização RAM/SSD/Gaming
+Windows NVMe RAM Optimizer - V4.0
+Sistema automatizado de otimização RAM/SSD/Gaming/Performance
 """
 import sys
 import time
@@ -19,12 +19,17 @@ from modules.dashboard import Dashboard
 from modules.gpu_controller import GPUController
 from modules.nvme_manager import NVMeManager
 
-# V3.0 New Modules
+# V3.0 Modules
 from modules.network_qos import NetworkQoSManager
 from modules.game_detector import GameModeDetector
 from modules.history_logger import get_logger as get_history_logger
 from modules.profiles import get_manager as get_profile_manager, OptimizationProfile
 from modules.tray_icon import SystemTrayIcon
+
+# V4.0 Modules (NEW!)
+from modules.timer_resolution import TimerResolutionOptimizer
+from modules.services_optimizer import WindowsServicesOptimizer
+from modules.gamebar_optimizer import GameBarOptimizer
 
 # Inicializa colorama para cores no terminal
 init()
@@ -204,7 +209,7 @@ def main():
     
     # === V3.0: HISTORY LOGGER ===
     history = get_history_logger()
-    history.log_event("optimizer_start", "V3.0 Initialized")
+    history.log_event("optimizer_start", "V4.0 Initialized")
     services['history'] = history
     print(f"{Fore.GREEN}✓ History Logger ativado (CSV){Style.RESET_ALL}")
     
@@ -215,7 +220,24 @@ def main():
     # Aplica perfil padrão (Balanced)
     profile_mgr.apply_profile(OptimizationProfile.BALANCED)
 
-    print(f"\n{Fore.GREEN}✓ Todos os serviços V3.0 iniciados{Style.RESET_ALL}")
+    # === V4.0: TIMER RESOLUTION (Input Lag Fix) ===
+    print(f"\n{Fore.CYAN}[V4.0] Aplicando otimizações avançadas...{Style.RESET_ALL}")
+    timer_opt = TimerResolutionOptimizer()
+    if timer_opt.apply_optimization():
+        timer_opt.start_persistent()
+        services['timer'] = timer_opt
+    
+    # === V4.0: GAME BAR DISABLER (+FPS) ===
+    gamebar_opt = GameBarOptimizer()
+    gamebar_opt.apply_all_optimizations()
+    services['gamebar'] = gamebar_opt
+    
+    # === V4.0: WINDOWS SERVICES OPTIMIZER ===
+    services_opt = WindowsServicesOptimizer()
+    services_opt.optimize()
+    services['services_opt'] = services_opt
+
+    print(f"\n{Fore.GREEN}✓ Todos os serviços V4.0 iniciados{Style.RESET_ALL}")
     
     time.sleep(1)
     
