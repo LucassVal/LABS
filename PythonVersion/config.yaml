@@ -65,6 +65,11 @@ auto_low_priority_apps:
 # === V3.0: Network QoS (Ping Booster) ===
 network_qos:
   enabled: true
+  # DNS Provider: adguard, google, cloudflare, adguard_family, cloudflare_malware
+  # adguard = Bloqueia ads, trackers e malware
+  # google = Rápido e confiável
+  # cloudflare = DNS mais rápido do mundo
+  dns_provider: adguard
 
 # === V3.0: Game Mode Detector ===
 game_detector:
