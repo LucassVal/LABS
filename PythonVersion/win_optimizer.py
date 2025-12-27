@@ -147,29 +147,15 @@ def main():
                 print(f"{Fore.YELLOW}⚠ Não foi possível ajustar power limit (pode precisar drivers atualizados){Style.RESET_ALL}")
     
     print(f"\n{Fore.GREEN}✓ Todos os serviços iniciados{Style.RESET_ALL}")
-    print(f"\n{Fore.YELLOW}═══════════════════════════════════════════════════════════{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}Escolha o modo de visualização:{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  [1] Dashboard Console (atualiza a cada 2s - SEM flickering){Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  [2] Widget Flutuante (janela sempre visível){Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}═══════════════════════════════════════════════════════════{Style.RESET_ALL}\n")
+    print(f"\n{Fore.GREEN}✓ Todos os serviços iniciados{Style.RESET_ALL}")
     
-    choice = input(f"{Fore.GREEN}Escolha (1 ou 2): {Style.RESET_ALL}").strip()
+    time.sleep(1)
     
-    time.sleep(0.5)
-    
-    # Loop principal
+    # Loop principal - Modo Dashboard (Padrão Direto)
     try:
-        if choice == "2":
-            # Modo Widget
-            from modules.widget import OptimizerWidget
-            print(f"\n{Fore.CYAN}Iniciando Widget Flutuante...{Style.RESET_ALL}\n")
-            widget = OptimizerWidget(services)
-            widget.run()
-        else:
-            # Modo Dashboard (padrão)
-            print(f"\n{Fore.CYAN}Iniciando Dashboard Console...{Style.RESET_ALL}\n")
-            dashboard = Dashboard()
-            dashboard.run(services)
+        print(f"\n{Fore.CYAN}Iniciando Dashboard Console...{Style.RESET_ALL}\n")
+        dashboard = Dashboard()
+        dashboard.run(services)
     
     except KeyboardInterrupt:
         print(f"\n\n{Fore.YELLOW}[INFO] Parando serviços...{Style.RESET_ALL}")
