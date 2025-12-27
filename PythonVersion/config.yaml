@@ -6,6 +6,14 @@ standby_cleaner:
   threshold_mb: 4096            # Limpa quando tiver MENOS de 4GB livre (modo agressivo)
   check_interval_seconds: 5
 
+# === Otimização de NVMe/SSD (Novo!) ===
+nvme:
+  enabled: true
+  disable_last_access: true     # Ganho performance IOPS
+  prevent_disk_sleep: true      # Evita lag de retorno de suspensão
+  periodic_trim: true
+  trim_interval_hours: 24       # Executa TRIM uma vez por dia (ou ao iniciar)
+
 # === Controle de CPU ===
 # Configurado para MÁXIMO EQUILÍBRIO (equivalente a -70mV undervolt)
 cpu_control:

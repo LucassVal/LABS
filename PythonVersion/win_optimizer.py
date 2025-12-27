@@ -15,6 +15,7 @@ from modules.smart_process_manager import SmartProcessManager
 from modules.fan_controller import FanController
 from modules.dashboard import Dashboard
 from modules.gpu_controller import GPUController
+from modules.nvme_manager import NVMeManager
 
 # Inicializa colorama para cores no terminal
 init()
@@ -152,6 +153,24 @@ def main():
             else:
                 print(f"{Fore.YELLOW}⚠ Não foi possível ajustar power limit (pode precisar drivers atualizados){Style.RESET_ALL}")
     
+    # === NVMe/SSD OPTIMIZER ===
+    nvme_config = config.get('nvme', {'enabled': True})
+    if nvme_config.get('enabled', True):
+        nvme_mgr = NVMeManager(nvme_config)
+        
+        # 1. FileSystem Opt
+        if nvme_config.get('disable_last_access', True):
+            nvme_mgr.apply_filesystem_optimizations()
+            
+        # 2. Power Plan
+        if nvme_config.get('prevent_disk_sleep', True):
+            nvme_mgr.apply_power_optimizations()
+            
+        # 3. Periodic Trim
+        if nvme_config.get('periodic_trim', True):
+            nvme_mgr.start_periodic_trim()
+            services['nvme'] = nvme_mgr
+
     print(f"\n{Fore.GREEN}✓ Todos os serviços iniciados{Style.RESET_ALL}")
     print(f"\n{Fore.GREEN}✓ Todos os serviços iniciados{Style.RESET_ALL}")
     

@@ -153,6 +153,21 @@ class Dashboard:
         table.add_row("[bold white]CPU[/bold white]", "")
         table.add_row("  Load", f"[{cpu_color}]{cpu_usage:.1f}% {cpu_desc}[/{cpu_color}]")
         table.add_row("  Visual", f"{cpu_bar}")
+        
+        # Per-Core Visualization (Active Monitoring)
+        cores = psutil.cpu_percent(percpu=True)
+        # Create 2 rows of 4-8 cores (mini bars)
+        core_visual = ""
+        for i, c in enumerate(cores):
+            c_color = "green" if c < 50 else "yellow" if c < 80 else "red"
+            # Mini bar using braille or blocks
+            chars = "  ▂▃▄▅▆▇█"
+            idx = int((c / 100) * (len(chars) - 1))
+            core_visual += f"[{c_color}]{chars[idx]}[/{c_color}]"
+            if (i + 1) % 8 == 0: core_visual += "\n    "
+        
+        table.add_row("  Cores", f"[bold]{core_visual}[/bold]")
+
         table.add_row("  Thermal", f"[{cpu_t_color}]{temp_display} {cpu_t_desc}[/{cpu_t_color}]")
         table.add_row("  Frequency", f"[{freq_color}]{self.stats['cpu_freq']:.2f} GHz[/{freq_color}]")
         table.add_row("  Target", f"[yellow]{self.stats['cpu_limit']}%[/yellow] (Smart Governor)")
