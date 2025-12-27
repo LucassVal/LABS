@@ -10,13 +10,13 @@
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Performance Gains](#performance-gains)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [License](#license)
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Performance Gains](#-performance-gains)
+- [Quick Start](#-quick-start)
+- [Configuration](#️-configuration)
+- [Documentation](#-documentation)
+- [License](#-license)
 
 ---
 
