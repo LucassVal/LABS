@@ -4,9 +4,13 @@ import ctypes
 import threading
 import psutil
 import time
+
+class IO_PRIORITY:
     VeryLow = 0    # Background (Chrome, Updates)
     Low = 1
     Normal = 2
+    High = 3       # Games, Active Apps
+    Critical = 4
     High = 3       # Games, Active Apps
     Critical = 4
 
