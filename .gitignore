@@ -1,0 +1,46 @@
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and databases
+*.log
+*.pid
+*.db
+*.sqlite
+
+# Local configuration
+config.local.yaml
+*.local
+
+# Test files
+test_*.py
+tests/__pycache__/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Environment
+venv/
+env/
+ENV/
+.venv

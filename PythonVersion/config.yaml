@@ -1,0 +1,55 @@
+# Windows NVMe RAM Optimizer - Configuração
+
+# === Limpeza de Memória Standby ===
+standby_cleaner:
+  enabled: true
+  threshold_mb: 4096            # Limpa quando tiver MENOS de 4GB livre (modo agressivo)
+  check_interval_seconds: 5
+
+# === Controle de CPU ===
+# Configurado para MÁXIMO EQUILÍBRIO (equivalente a -70mV undervolt)
+cpu_control:
+  max_frequency_percent: 85   # RECOMENDADO: 92% performance, -8°C temp
+  min_frequency_percent: 5    # Baixo quando ocioso (CPU "acorda" rápido)
+
+# === Controle de Ventoinhas ===
+# NOTA: Windows não permite controle direto
+# Configuração manual necessária (veja GUIA_VENTOINHAS.md)
+fan_control:
+  try_auto_detect: true        # Tenta detectar e configurar automaticamente
+  show_instructions: true      # Mostra instruções se não conseguir
+
+# === Controle de GPU (Power Limit) ===
+# ⚠️ BLOQUEADO PELA ASUS - Use MSI Afterburner manualmente
+gpu_control:
+  enabled: false                # Desabilitado (ASUS bloqueia via BIOS)
+  power_limit_percent: 90       # Se seu modelo suportar, mude para true
+  
+# === Stress Test ===
+stress_test:
+  enabled: false
+  target_load_percent: 70     # Carga desejada (20-95%)
+  thread_count: 0             # 0 = auto (usa todos os cores)
+
+# === Gerenciamento de SysMain ===
+sysmain:
+  disabled: true  # DESABILITADO - libera recursos para responsividade
+
+# === PRIORIZAÇÃO AUTOMÁTICA INTELIGENTE ===
+# O sistema detecta AUTOMATICAMENTE processos iniciados pelo usuário
+# e dá prioridade ALTA sem você precisar configurar nada!
+#
+# PRIORIDADE ALTA automática: Jogos, apps, programas que VOCÊ abre
+# PRIORIDADE BAIXA automática: Navegadores e apps de background
+#
+# Lista de apps que SEMPRE terão prioridade baixa (mesmo sendo do usuário):
+auto_low_priority_apps:
+  - "chrome.exe"
+  - "msedge.exe"
+  - "firefox.exe"
+  - "discord.exe"
+  - "spotify.exe"
+  - "steam.exe"
+  
+# NOTA: Você NÃO precisa mais configurar process_rules!
+# O sistema inteligente cuida de tudo automaticamente!
